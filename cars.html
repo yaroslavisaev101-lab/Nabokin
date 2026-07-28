@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Каталог — NabokinAuto</title>
+<link rel="icon" href="images/nabokin-logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .car-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  @media (max-width:960px){ .car-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:640px){ .car-grid{ grid-template-columns:1fr; } }
+  .car-card{ padding:0; overflow:hidden; }
+  .car-media{ height:180px; background:linear-gradient(135deg,var(--surface-2),var(--surface)); display:flex; align-items:center; justify-content:center; color:var(--ink-faint); }
+  .car-body{ padding:20px; }
+  .car-body h3{ font-size:18px; margin-bottom:6px; }
+  .car-meta{ display:flex; gap:10px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-muted); font-family:var(--font-mono); margin-bottom:12px; }
+  .car-meta span{ padding:4px 9px; border:1px solid var(--border); border-radius:999px; }
+  .car-price{ font-family:var(--font-mono); font-size:19px; color:var(--accent); font-weight:600; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow">Каталог</p>
+      <h1>Примеры подбора</h1>
+      <p>Ориентиры по классам и бюджету — под каждый запрос мы ищем конкретный лот на актуальных торгах в Японии, Корее и Китае.</p>
+    </div>
+  </section>
+
+  <section class="section" style="border-top:none;padding-top:10px">
+    <div class="wrap">
+      <div class="car-grid" id="carGrid"></div>
+      <div class="card" style="margin-top:36px;padding:34px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+        <div>
+          <h3 style="font-size:20px;margin-bottom:6px">Не нашли подходящий вариант?</h3>
+          <p style="color:var(--ink-muted)">Оставьте параметры — подберём машину под заказ индивидуально.</p>
+        </div>
+        <button class="btn btn-primary" data-open-modal="order">Заказать авто</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="js/store.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+<script>
+const SAMPLE_CARS = [
+  { name:"Toyota RAV4 Adventure", market:"Япония", year:2023, engine:"2.0 л / 173 л.с.", price:"от 2 850 000 ₽" },
+  { name:"Kia Sportage GT-Line", market:"Корея", year:2022, engine:"1.6 л турбо / 180 л.с.", price:"от 2 250 000 ₽" },
+  { name:"BYD Song Plus EV", market:"Китай", year:2024, engine:"Электро / 204 л.с.", price:"от 2 600 000 ₽" },
+  { name:"Honda Vezel Hybrid", market:"Япония", year:2022, engine:"1.5 л гибрид / 131 л.с.", price:"от 1 950 000 ₽" },
+  { name:"Hyundai Palisade", market:"Корея", year:2023, engine:"3.8 л / 295 л.с.", price:"от 3 700 000 ₽" },
+  { name:"Chery Tiggo 8 Pro", market:"Китай", year:2023, engine:"1.6 л турбо / 197 л.с.", price:"от 2 050 000 ₽" }
+];
+document.getElementById("carGrid").innerHTML = SAMPLE_CARS.map(c=>`
+  <div class="card car-card">
+    <div class="car-media">${icon('car',34)}</div>
+    <div class="car-body">
+      <h3>${c.name}</h3>
+      <div class="car-meta"><span>${c.market}</span><span>${c.year}</span><span>${c.engine}</span></div>
+      <div class="car-price">${c.price}</div>
+      <button class="btn btn-ghost btn-sm" data-open-modal="order" style="width:100%;justify-content:center">Заказать похожий</button>
+    </div>
+  </div>`).join("");
+document.addEventListener("DOMContentLoaded", ()=> buildModals());
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Отзывы — NabokinAuto</title>
+<link rel="icon" href="images/nabokin-logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .review-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:760px){ .review-grid{ grid-template-columns:1fr; } }
+  .review-card{ padding:24px; }
+  .review-stars{ display:flex; gap:3px; color:var(--accent); margin-bottom:10px; }
+  .review-stars svg{ width:15px; height:15px; }
+  .review-name{ font-weight:700; margin-top:12px; }
+  .review-date{ font-family:var(--font-mono); font-size:12px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow">Отзывы</p>
+      <h1>Что говорят клиенты</h1>
+      <p>Реальные истории заказа и доставки автомобилей из Азии.</p>
+    </div>
+  </section>
+  <section class="section" style="border-top:none;padding-top:10px">
+    <div class="wrap">
+      <div id="reviewsList" class="review-grid"></div>
+      <div class="card" style="margin-top:30px;padding:30px">
+        <h3 style="font-size:19px;margin-bottom:14px">Оставить отзыв</h3>
+        <form id="reviewForm">
+          <div class="grid-2">
+            <div class="field"><label>Ваше имя</label><input name="name" required></div>
+            <div class="field">
+              <label>Оценка</label>
+              <select name="rating">
+                <option value="5">5 — отлично</option>
+                <option value="4">4 — хорошо</option>
+                <option value="3">3 — нормально</option>
+                <option value="2">2 — не очень</option>
+                <option value="1">1 — плохо</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Отзыв</label><textarea name="text" required></textarea></div>
+          <button class="btn btn-primary" type="submit">Опубликовать отзыв</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="js/store.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+<script>
+function starRow(rating){
+  let out = "";
+  for(let i=0;i<5;i++){ out += icon('star',15); }
+  return `<div class="review-stars">${out}</div>`;
+}
+function renderReviews(){
+  const reviews = NabokinStore.get().reviews;
+  const host = document.getElementById("reviewsList");
+  if(reviews.length === 0){
+    host.innerHTML = `<div class="empty-state" style="grid-column:1/-1">${icon('review',32)}<h3>Отзывов пока нет</h3><p>Будьте первым, кто оставит отзыв.</p></div>`;
+    return;
+  }
+  host.innerHTML = reviews.map(r=>`
+    <div class="card review-card">
+      ${starRow(r.rating)}
+      <p style="color:var(--ink-muted)">${r.text}</p>
+      <div class="review-name">${r.name}</div>
+      <div class="review-date">${new Date(r.date).toLocaleDateString('ru-RU')}</div>
+    </div>`).join("");
+}
+renderReviews();
+document.getElementById("reviewForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  NabokinStore.addReview({ name:data.name, rating:Number(data.rating), text:data.text });
+  e.target.reset();
+  renderReviews();
+  toast("Спасибо! Ваш отзыв опубликован.");
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор стоимости — NabokinAuto</title>
+<link rel="icon" href="images/nabokin-logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .calc-layout{ display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start; }
+  @media (max-width:900px){ .calc-layout{ grid-template-columns:1fr; } }
+  .calc-form-card{ padding:32px; }
+  .segmented{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .segmented button{ padding:9px 16px; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--ink-muted); font-size:14px; font-weight:600; }
+  .segmented button.is-active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .result-card{ padding:32px; position:sticky; top:110px; }
+  .result-total{ font-family:var(--font-mono); font-size:38px; font-weight:600; color:var(--accent); margin:10px 0 4px; }
+  .result-rows{ margin-top:22px; display:flex; flex-direction:column; gap:0; }
+  .result-row{ display:flex; justify-content:space-between; padding:12px 0; border-top:1px solid var(--border); font-size:14.5px; }
+  .result-row span:last-child{ font-family:var(--font-mono); color:var(--ink); }
+  .result-bar{ height:8px; border-radius:999px; background:var(--gauge-track); overflow:hidden; margin-top:18px; display:flex; }
+  .result-bar span{ height:100%; display:block; }
+</style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow">Калькулятор</p>
+      <h1>Расчёт стоимости авто под ключ</h1>
+      <p>Предварительная оценка — точная стоимость зависит от конкретного лота, курса валют и текущих пошлин на дату сделки.</p>
+    </div>
+  </section>
+
+  <section class="section" style="border-top:none;padding-top:20px">
+    <div class="wrap calc-layout">
+      <div class="card calc-form-card">
+        <div class="field">
+          <label>Рынок</label>
+          <div class="segmented" id="marketSeg">
+            <button type="button" data-market="jp" class="is-active">Япония</button>
+            <button type="button" data-market="kr">Корея</button>
+            <button type="button" data-market="cn">Китай</button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Цена авто на аукционе / у продавца, ₽</label><input type="number" id="carPrice" value="1200000" min="0"></div>
+          <div class="field"><label>Год выпуска</label><input type="number" id="carYear" value="2022" min="1990" max="2026"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Объём двигателя, л</label><input type="number" id="carVolume" value="1.6" step="0.1" min="0.5"></div>
+          <div class="field"><label>Мощность, л.с.</label><input type="number" id="carPower" value="140" min="1"></div>
+        </div>
+        <div class="field">
+          <label>Тип двигателя</label>
+          <select id="carEngine">
+            <option value="ice">ДВС (бензин/дизель)</option>
+            <option value="hybrid">Гибрид</option>
+            <option value="ev">Электро</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="sendCalc" type="button" style="margin-top:8px">Получить расчёт менеджера</button>
+      </div>
+
+      <div class="card result-card">
+        <p class="eyebrow" style="margin-bottom:6px">Итого под ключ</p>
+        <div class="result-total" id="resTotal">—</div>
+        <div class="result-bar" id="resBar"></div>
+        <div class="result-rows" id="resRows"></div>
+        <p style="color:var(--ink-muted);font-size:13px;margin-top:18px">Расчёт ориентировочный. Точную стоимость менеджер подтвердит после подбора конкретного лота.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="js/store.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById("sendCalc").innerHTML = "Получить расчёт менеджера";
+let market = "jp";
+document.querySelectorAll("#marketSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("#marketSeg button").forEach(x=>x.classList.remove("is-active"));
+    b.classList.add("is-active");
+    market = b.dataset.market;
+    calc();
+  });
+});
+
+const RATES = { jp: { label:"Япония", freight: 180000, dutyBase: .32 }, kr: { label:"Корея", freight: 140000, dutyBase: .30 }, cn: { label:"Китай", freight: 120000, dutyBase: .34 } };
+
+function fmt(n){ return Math.round(n).toLocaleString("ru-RU") + " ₽"; }
+
+function calc(){
+  const price = Math.max(0, Number(document.getElementById("carPrice").value) || 0);
+  const power = Math.max(1, Number(document.getElementById("carPower").value) || 1);
+  const year = Number(document.getElementById("carYear").value) || 2022;
+  const engine = document.getElementById("carEngine").value;
+  const r = RATES[market];
+
+  const age = Math.max(0, new Date().getFullYear() - year);
+  const ageFactor = age <= 3 ? 1 : age <= 5 ? 1.08 : age <= 7 ? 1.18 : 1.3;
+  const duty = engine === "ev" ? price * 0.15 : price * r.dutyBase * ageFactor * (power > 250 ? 1.25 : 1);
+  const freight = r.freight;
+  const service = Math.max(60000, price * 0.05);
+  const total = price + freight + duty + service;
+
+  document.getElementById("resTotal").textContent = fmt(total);
+  const parts = [
+    { label:"Автомобиль (" + r.label + ")", val: price, color:"var(--accent)" },
+    { label:"Логистика и доставка", val: freight, color:"var(--accent-2)" },
+    { label:"Таможенная пошлина", val: duty, color:"var(--ink-faint)" },
+    { label:"Услуги NabokinAuto", val: service, color:"var(--success)" }
+  ];
+  document.getElementById("resRows").innerHTML = parts.map(p=>`<div class="result-row"><span>${p.label}</span><span>${fmt(p.val)}</span></div>`).join("");
+  document.getElementById("resBar").innerHTML = parts.map(p=>`<span style="width:${(p.val/total*100).toFixed(1)}%;background:${p.color}"></span>`).join("");
+}
+["carPrice","carYear","carVolume","carPower","carEngine"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", calc);
+  document.getElementById(id).addEventListener("change", calc);
+});
+document.addEventListener("DOMContentLoaded", calc);
+
+document.getElementById("sendCalc").addEventListener("click", ()=>{
+  const price = document.getElementById("carPrice").value;
+  const year = document.getElementById("carYear").value;
+  const total = document.getElementById("resTotal").textContent;
+  NabokinStore.addMessage({ type:"calculator", market, price, year, total, message:`Запрос расчёта: рынок ${RATES[market].label}, год ${year}, цена ${price}, итог ~${total}` });
+  toast("Заявка на расчёт отправлена менеджеру.");
+});
+</script>
+</body>
+</html>

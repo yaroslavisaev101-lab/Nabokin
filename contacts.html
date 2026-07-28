@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Контакты — NabokinAuto</title>
+<link rel="icon" href="images/nabokin-logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .contact-layout{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:860px){ .contact-layout{ grid-template-columns:1fr; } }
+  .contact-item{ display:flex; gap:14px; padding:20px 0; border-top:1px solid var(--border); }
+  .contact-item:first-child{ border-top:none; }
+  .contact-item .ic{ width:40px; height:40px; border-radius:10px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .contact-item strong{ display:block; font-size:15px; }
+  .contact-item span, .contact-item a{ color:var(--ink-muted); font-size:14.5px; }
+  .map-plate{ border-radius:var(--radius-l); border:1px solid var(--border); background:var(--surface-2); height:100%; min-height:280px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:var(--ink-muted); text-align:center; padding:30px; }
+</style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow">Контакты</p>
+      <h1>Как с нами связаться</h1>
+      <p>Ответим по телефону, в мессенджере или по почте — а можно просто оставить заявку ниже.</p>
+    </div>
+  </section>
+
+  <section class="section" style="border-top:none;padding-top:10px">
+    <div class="wrap contact-layout">
+      <div class="card" style="padding:30px">
+        <div class="contact-item">
+          <div class="ic" id="icPhone"></div>
+          <div><strong>Телефон</strong><a href="#" id="cPhone"></a></div>
+        </div>
+        <div class="contact-item">
+          <div class="ic" id="icMail"></div>
+          <div><strong>Email</strong><a href="#" id="cMail"></a></div>
+        </div>
+        <div class="contact-item">
+          <div class="ic" id="icWa"></div>
+          <div><strong>WhatsApp</strong><a href="#" id="cWa" target="_blank" rel="noopener"></a></div>
+        </div>
+        <div class="contact-item">
+          <div class="ic" id="icPin"></div>
+          <div><strong>Адрес</strong><span id="cAddress"></span></div>
+        </div>
+        <div class="contact-item">
+          <div class="ic" id="icClock">🕘</div>
+          <div><strong>Часы работы</strong><span id="cHours"></span></div>
+        </div>
+      </div>
+      <div class="map-plate">
+        <div id="icMap"></div>
+        <strong id="cCity" style="font-size:17px"></strong>
+        <span>Встречи — по предварительной записи. Точный адрес офиса пришлём после подтверждения визита.</span>
+      </div>
+    </div>
+
+    <div class="wrap" style="margin-top:26px">
+      <div class="card" style="padding:32px;max-width:640px">
+        <h3 style="font-size:19px;margin-bottom:14px">Оставить заявку</h3>
+        <form id="contactPageForm">
+          <div class="field"><label>Ваше имя</label><input name="name" required></div>
+          <div class="field"><label>Телефон или e-mail</label><input name="contact" required></div>
+          <div class="field"><label>Сообщение</label><textarea name="message" required></textarea></div>
+          <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center">Отправить</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="js/store.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+<script>
+const s = NabokinStore.get().settings;
+document.getElementById("icPhone").innerHTML = icon('phone',18);
+document.getElementById("icMail").innerHTML = icon('mail',18);
+document.getElementById("icWa").innerHTML = icon('whatsapp',18);
+document.getElementById("icPin").innerHTML = icon('pin',18);
+document.getElementById("icMap").innerHTML = icon('pin',26);
+document.getElementById("cPhone").textContent = s.phone;
+document.getElementById("cPhone").href = s.phoneHref;
+document.getElementById("cMail").textContent = s.email;
+document.getElementById("cMail").href = "mailto:"+s.email;
+document.getElementById("cWa").textContent = s.whatsapp;
+document.getElementById("cWa").href = s.whatsappHref;
+document.getElementById("cAddress").textContent = s.address;
+document.getElementById("cHours").textContent = s.hoursText;
+document.getElementById("cCity").textContent = s.city;
+
+document.getElementById("contactPageForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  NabokinStore.addMessage({ type:"contact", ...data });
+  e.target.reset();
+  toast("Заявка отправлена — свяжемся с вами в ближайшее время.");
+});
+</script>
+</body>
+</html>

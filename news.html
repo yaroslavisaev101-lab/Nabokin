@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Новости — NabokinAuto</title>
+<link rel="icon" href="images/nabokin-logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .news-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  @media (max-width:960px){ .news-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:640px){ .news-grid{ grid-template-columns:1fr; } }
+  .news-card{ overflow:hidden; }
+  .news-media{ height:170px; object-fit:cover; width:100%; background:var(--surface-2); }
+  .news-body{ padding:20px; }
+  .news-date{ font-family:var(--font-mono); font-size:12px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow">Новости</p>
+      <h1>Новости автомира</h1>
+      <p>Актуальные новости авторынка, импорта и изменений в правилах ввоза автомобилей.</p>
+    </div>
+  </section>
+  <section class="section" style="border-top:none;padding-top:10px">
+    <div class="wrap">
+      <div id="newsList"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="js/store.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+<script>
+const news = NabokinStore.get().news;
+const host = document.getElementById("newsList");
+if(news.length === 0){
+  host.innerHTML = `<div class="empty-state">${icon('news',32)}<h3>Новостей пока нет</h3><p>Работаем над этим.</p></div>`;
+} else {
+  host.innerHTML = `<div class="news-grid">` + news.map(n=>`
+    <article class="card news-card">
+      ${n.image ? `<img class="news-media" src="${n.image}" alt="">` : `<div class="news-media" style="display:flex;align-items:center;justify-content:center;color:var(--ink-faint)">${icon('news',30)}</div>`}
+      <div class="news-body">
+        <span class="news-date">${new Date(n.date).toLocaleDateString('ru-RU')}</span>
+        <h3 style="font-size:18px;margin:8px 0">${n.title}</h3>
+        ${n.excerpt ? `<p style="color:var(--ink-muted);font-size:14.5px">${n.excerpt}</p>` : ""}
+      </div>
+    </article>`).join("") + `</div>`;
+}
+</script>
+</body>
+</html>
